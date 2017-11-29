@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FriendOrganizer.UI.ViewModel
 {
-    public class NavigationViewModel
+    public class NavigationViewModel : INavigationViewModel
     {
         public ObservableCollection<LookupItem> Friends { get; set; }
         private IFriendLookupDataService _friendLookupService;
@@ -23,6 +23,7 @@ namespace FriendOrganizer.UI.ViewModel
         public async Task LoadAsync()
         {
             var lookup = await _friendLookupService.GetFriendLookupAsync();
+            Friends.Clear();
             foreach (var item in lookup)
             {
                 Friends.Add(item);
