@@ -27,5 +27,12 @@ namespace FriendOrganizer.UI
             mainWindow.Show();
             
         }
+
+        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            //TODO: Log error
+            MessageBox.Show($"Unexpected error: {e.Exception.Message}");
+            e.Handled = true;
+        }
     }
 }
