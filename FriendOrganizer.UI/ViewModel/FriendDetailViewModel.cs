@@ -51,22 +51,32 @@ namespace FriendOrganizer.UI.ViewModel
 
         private bool OnSaveCanExecute()
         {
-            //TODO: check if friend is valid
-            return true;
+            return Friend != null && !Friend.HasErrors;
+
         }
 
         private async void OnOpenFriendDetailView(int friendId)
         {
-            var friend = await _dataService.GetByIdAsync(friendId);
-            Friend = new FriendWrapper(friend);
+            await LoadAsync(friendId);
         }
 
         public async Task LoadAsync(int friendId)
         {
             var friend = await _dataService.GetByIdAsync(friendId);
             Friend = new FriendWrapper(friend);
+
+            Friend.PropertyChanged += Friend_PropertyChanged;
+            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
         }
 
+        private void Friend_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Friend.HasErrors))
+            {
+                ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+            }
 
+            
+        }
     }
 }

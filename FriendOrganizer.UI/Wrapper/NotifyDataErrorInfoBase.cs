@@ -13,8 +13,6 @@ namespace FriendOrganizer.UI.Wrapper
 
         public bool HasErrors => _errorsByPropertyName.Any();
 
-
-
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
 
         public IEnumerable GetErrors(string propertyName)
@@ -25,6 +23,7 @@ namespace FriendOrganizer.UI.Wrapper
         protected virtual void OnErrorsChanged(string propertyName)
         {
             ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
+            base.OnPropertyChanged(nameof(HasErrors));
         }
 
         protected void AddError(string propertyName, string error)

@@ -3,45 +3,31 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 namespace FriendOrganizer.UI.Wrapper
 {
     public class FriendWrapper : ModelWrapper<Friend>
     {
-        
+
         public int Id { get { return Model.Id; } }
 
         public string FirstName
         {
             get { return GetValue<string>(); }
-            set
-            {
-                SetValue<string>(value);
-                OnPropertyChanged();
-                ValidateProperty();
-            }
+            set { SetValue(value); }
         }
 
         public string LastName
         {
             get { return GetValue<string>(); }
-            set
-            {
-                SetValue<string>(value);
-                OnPropertyChanged();
-                ValidateProperty();
-            }
+            set { SetValue(value); }
         }
 
         public string Email
         {
             get { return GetValue<string>(); }
-            set
-            {
-                SetValue<string>(value);
-                OnPropertyChanged();
-                ValidateProperty();
-            }
+            set { SetValue(value); }
         }
 
         public FriendWrapper(Friend friend) : base(friend)
@@ -49,30 +35,27 @@ namespace FriendOrganizer.UI.Wrapper
 
         }
 
-        private void ValidateProperty([CallerMemberName]string propertyName = null)
+        protected override IEnumerable<string> ValidateProperty(string propertyName)
         {
-            ClearErrors(propertyName);
             switch (propertyName)
             {
                 case nameof(FirstName):
-                    if(string.Equals(FirstName, string.Empty, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(FirstName, "test", StringComparison.OrdinalIgnoreCase))
                     {
-                        AddError(propertyName, "First name cannot be blank.");
+                        yield return "First name cannot be test.";
                     }
                     break;
                 case nameof(LastName):
-                    if (string.Equals(LastName, string.Empty, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(LastName, "test", StringComparison.OrdinalIgnoreCase))
                     {
-                        AddError(propertyName, "Last name cannot be blank.");
+                        yield return "Last name cannot be test.";
                     }
                     break;
                 case nameof(Email):
                     if (Email.ToLower().Contains("@mailinator"))
                     {
-                        AddError(propertyName, "Enter a valid email address.");
+                        yield return "Enter a valid email address.";
                     }
-                    break;
-                default:
                     break;
             }
         }
