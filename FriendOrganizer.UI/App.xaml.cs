@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace FriendOrganizer.UI
 {
@@ -27,7 +28,7 @@ namespace FriendOrganizer.UI
             mainWindow.Show();
         }
 
-        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        private void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             //TODO: Log error
             MessageBox.Show($"Unexpected error: {e.Exception.Message}");

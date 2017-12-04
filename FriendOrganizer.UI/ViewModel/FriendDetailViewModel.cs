@@ -25,14 +25,28 @@ namespace FriendOrganizer.UI.ViewModel
             set { _friend = value; OnPropertyChanged(); }
         }
 
+        private bool _hasChanges;
+
+        public bool HasChanges
+        {
+            get { return _hasChanges; }
+            set
+            {
+                if (_hasChanges != value)
+                {
+                    _hasChanges = value;
+                    OnPropertyChanged();
+                    ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         public ICommand SaveCommand { get; }
 
         public FriendDetailViewModel(IFriendRepository dataService, IEventAggregator eventAggregator)
         {
             _dataService = dataService;
             _eventAggregator = eventAggregator;
-            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
-                .Subscribe(OnOpenFriendDetailView);
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
         }
@@ -40,6 +54,9 @@ namespace FriendOrganizer.UI.ViewModel
         private async void OnSaveExecute()
         {
             await _dataService.SaveAsync();
+            //Data saved - no more changes to save
+            HasChanges = _dataService.HasChanges();
+
             _eventAggregator.GetEvent<AfterFriendSavedEvent>().Publish(
                 new AfterFriendSavedEventArgs
                 {
@@ -50,12 +67,10 @@ namespace FriendOrganizer.UI.ViewModel
 
         private bool OnSaveCanExecute()
         {
-            return Friend != null && !Friend.HasErrors;
-        }
-
-        private async void OnOpenFriendDetailView(int friendId)
-        {
-            await LoadAsync(friendId);
+            //Disallow saving if there are no changes to be saved, there are errors, or friend is null
+            return Friend != null && 
+                !Friend.HasErrors && 
+                HasChanges;
         }
 
         public async Task LoadAsync(int friendId)
@@ -69,6 +84,11 @@ namespace FriendOrganizer.UI.ViewModel
 
         private void Friend_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (!HasChanges)
+            {
+                HasChanges = _dataService.HasChanges();
+            }
+
             if (e.PropertyName == nameof(Friend.HasErrors))
             {
                 ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();

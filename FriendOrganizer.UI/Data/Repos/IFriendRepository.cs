@@ -8,5 +8,6 @@ namespace FriendOrganizer.UI.Data
     {
         Task<Friend> GetByIdAsync(int friendId);
         Task SaveAsync();
+        bool HasChanges();
     }
 }
