@@ -42,6 +42,7 @@ namespace FriendOrganizer.UI.ViewModel
         }
 
         public ICommand SaveCommand { get; }
+        public ICommand DeleteCommand { get; set; }
 
         public FriendDetailViewModel(IFriendRepository dataService, IEventAggregator eventAggregator)
         {
@@ -49,6 +50,13 @@ namespace FriendOrganizer.UI.ViewModel
             _eventAggregator = eventAggregator;
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
+            DeleteCommand = new DelegateCommand(OnDeleteExecute); //No need for CanExecute since always true
+        }
+
+        private async void OnDeleteExecute()
+        {
+            _dataService.Delete(Friend.Model);
+            await _dataService.SaveAsync();
         }
 
         private async void OnSaveExecute()
@@ -68,18 +76,34 @@ namespace FriendOrganizer.UI.ViewModel
         private bool OnSaveCanExecute()
         {
             //Disallow saving if there are no changes to be saved, there are errors, or friend is null
-            return Friend != null && 
-                !Friend.HasErrors && 
+            return Friend != null &&
+                !Friend.HasErrors &&
                 HasChanges;
         }
 
-        public async Task LoadAsync(int friendId)
+        public async Task LoadAsync(int? friendId)
         {
-            var friend = await _dataService.GetByIdAsync(friendId);
+            var friend = friendId.HasValue ? await _dataService.GetByIdAsync(friendId.Value) : CreateFriend();
+
+            //var friend2 = await _dataService.GetByIdAsync((int)friendId);
             Friend = new FriendWrapper(friend);
 
             Friend.PropertyChanged += Friend_PropertyChanged;
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+
+            if (Friend.Id == 0)
+            {
+                //New friend being created, trigger validation
+                Friend.FirstName = "";
+            }
+        }
+
+        private Friend CreateFriend()
+        {
+            var friend = new Friend();
+
+            _dataService.Add(friend);
+            return friend;
         }
 
         private void Friend_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

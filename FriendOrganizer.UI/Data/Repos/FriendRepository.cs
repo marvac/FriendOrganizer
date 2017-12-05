@@ -18,6 +18,16 @@ namespace FriendOrganizer.UI.Data
             _context = context;
         }
 
+        public void Add(Friend friend)
+        {
+            _context.Friends.Add(friend);
+        }
+
+        public void Delete(Friend friend)
+        {
+            _context.Friends.Remove(friend);
+        }
+
         public async Task<Friend> GetByIdAsync(int friendId)
         {
             return await _context.Friends.SingleAsync(x => x.Id == friendId);
