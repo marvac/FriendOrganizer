@@ -7,6 +7,7 @@ namespace FriendOrganizer.DataAccess
     public class FriendOrganizerDbContext : DbContext
     {
         public DbSet<Friend> Friends { get; set; }
+        public DbSet<Language> Languages { get; set; }
 
         public FriendOrganizerDbContext() : base("FriendOrganizerDb")
         {

@@ -20,11 +20,19 @@ namespace FriendOrganizer.DataAccess.Migrations
             //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data.
             context.Friends.AddOrUpdate(f => f.FirstName,
-                new Friend { FirstName = "NewGuy", LastName = "Jenkins" },
-                new Friend { FirstName = "Herpins", LastName = "mcDerpins" },
-                new Friend { FirstName = "Molly", LastName = "Baggins" },
-                new Friend { FirstName = "Saggy", LastName = "Maggy" }
+                new Friend { FirstName = "Josh", LastName = "Smith" },
+                new Friend { FirstName = "Ziva", LastName = "David" },
+                new Friend { FirstName = "Jethro", LastName = "Gibbs" },
+                new Friend { FirstName = "Anthony", LastName = "DiNozzo" }
                 );
+
+            context.Languages.AddOrUpdate(l => l.Name,
+                new Language { Name = "English" },
+                new Language { Name = "French" },
+                new Language { Name = "German" },
+                new Language { Name = "Italian" },
+                new Language { Name = "Spanish" },
+                new Language { Name = "Farsi" } );
         }
     }
 }

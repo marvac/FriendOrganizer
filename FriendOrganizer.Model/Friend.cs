@@ -19,5 +19,9 @@ namespace FriendOrganizer.Model
 
         [StringLength(50)]
         public string Email { get; set; }
+
+        public int? LanguageId { get; set; }
+
+        public Language Language { get; set; }
     }
 }
