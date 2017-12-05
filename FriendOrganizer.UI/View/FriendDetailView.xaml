@@ -14,6 +14,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -32,9 +34,18 @@
         <TextBox Grid.Row="5" 
                      Text="{Binding Friend.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      Margin="10 0 10 10" />
-        <StackPanel Orientation="Horizontal" Grid.Row="7">
-            <Button Grid.Row="7" Content="Save" Command="{Binding SaveCommand}" Margin="10" />
-            <Button Grid.Row="7" Content="Delete" Command="{Binding DeleteCommand}" Margin="10" />
+        
+        <Label Grid.Row="6"  Content="Primary Language" Margin="10 10 10 0"/>
+        <ComboBox Grid.Row="7" 
+                  Margin="10 0 10 10" 
+                  ItemsSource="{Binding Languages}" 
+                  DisplayMemberPath="DisplayMember" 
+                  SelectedValue="{Binding Friend.LanguageId, Mode=TwoWay}"
+                  SelectedValuePath="Id" />
+        
+        <StackPanel Orientation="Horizontal" Grid.Row="9">
+            <Button Content="Save" Command="{Binding SaveCommand}" Margin="10" />
+            <Button Content="Delete" Command="{Binding DeleteCommand}" Margin="10" />
         </StackPanel>
 
     </Grid>

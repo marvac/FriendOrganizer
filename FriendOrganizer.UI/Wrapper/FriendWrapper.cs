@@ -30,6 +30,12 @@ namespace FriendOrganizer.UI.Wrapper
             set { SetValue(value); }
         }
 
+        public int? LanguageId
+        {
+            get { return GetValue<int?>(); }
+            set { SetValue(value); }
+        }
+
         public FriendWrapper(Friend friend) : base(friend)
         {
 

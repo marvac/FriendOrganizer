@@ -7,6 +7,7 @@ using Prism.Commands;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace FriendOrganizer.UI.ViewModel
         private IFriendRepository _dataService;
         private IEventAggregator _eventAggregator;
         private IMessageDialogService _messageDialogService;
+        private ILanguageLookupDataService _languageLookupDataService;
         private FriendWrapper _friend;
 
         public FriendWrapper Friend
@@ -45,19 +47,24 @@ namespace FriendOrganizer.UI.ViewModel
 
         public ICommand SaveCommand { get; }
         public ICommand DeleteCommand { get; set; }
+        public ObservableCollection<LookupItem> Languages { get; }
 
         #region Constructor
         public FriendDetailViewModel(
             IFriendRepository dataService, 
             IEventAggregator eventAggregator,
-            IMessageDialogService messageDialogService)
+            IMessageDialogService messageDialogService,
+            ILanguageLookupDataService languageLookupDataService)
         {
             _dataService = dataService;
             _eventAggregator = eventAggregator;
             _messageDialogService = messageDialogService;
+            _languageLookupDataService = languageLookupDataService;
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute); //No need for CanExecute since always true
+
+            Languages = new ObservableCollection<LookupItem>();
         }
         #endregion
 
@@ -67,7 +74,13 @@ namespace FriendOrganizer.UI.ViewModel
         {
             var friend = friendId.HasValue ? await _dataService.GetByIdAsync(friendId.Value) : CreateFriend();
 
-            //var friend2 = await _dataService.GetByIdAsync((int)friendId);
+            InitializeFriend(friend);
+
+            await LoadLanguagesAsync();
+        }
+
+        private void InitializeFriend(Friend friend)
+        {
             Friend = new FriendWrapper(friend);
 
             Friend.PropertyChanged += Friend_PropertyChanged;
@@ -79,6 +92,8 @@ namespace FriendOrganizer.UI.ViewModel
                 Friend.FirstName = "";
             }
         }
+
+
         #endregion
 
         #region Private Methods
@@ -124,6 +139,17 @@ namespace FriendOrganizer.UI.ViewModel
 
             _dataService.Add(friend);
             return friend;
+        }
+
+        private async Task LoadLanguagesAsync()
+        {
+            Languages.Clear();
+            var lookup = await _languageLookupDataService.GetLanguageLookupAsync();
+
+            foreach (var item in lookup)
+            {
+                Languages.Add(item);
+            }
         }
 
         private void Friend_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
