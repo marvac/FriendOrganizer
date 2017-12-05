@@ -25,9 +25,10 @@ namespace FriendOrganizer.UI.ViewModel
         private IEventAggregator _eventAggregator;
         private IMessageDialogService _messageDialogService;
 
+        #region Constructor
         public MainViewModel(
-            INavigationViewModel navigationViewModel, 
-            Func<IFriendDetailViewModel> friendDetailViewModelCreator, 
+            INavigationViewModel navigationViewModel,
+            Func<IFriendDetailViewModel> friendDetailViewModelCreator,
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService)
         {
@@ -38,9 +39,26 @@ namespace FriendOrganizer.UI.ViewModel
             _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
                 .Subscribe(OnOpenFriendDetailView);
 
+            _eventAggregator.GetEvent<AfterFriendDeletedEvent>()
+                .Subscribe(AfterFriendDeleted);
+
             CreateNewFriendCommand = new DelegateCommand(OnCreateNewFriendExecute);
 
             NavigationViewModel = navigationViewModel;
+        }
+        #endregion
+
+        #region Public Methods
+        public async Task LoadAsync()
+        {
+            await NavigationViewModel.LoadAsync();
+        }
+        #endregion
+
+        #region Private Methods
+        private void AfterFriendDeleted(int friendId)
+        {
+            FriendDetailViewModel = null;
         }
 
         private void OnCreateNewFriendExecute()
@@ -49,16 +67,13 @@ namespace FriendOrganizer.UI.ViewModel
             OnOpenFriendDetailView(null);
         }
 
-        public async Task LoadAsync()
-        {
-            await NavigationViewModel.LoadAsync();
-        }
+
 
         private async void OnOpenFriendDetailView(int? friendId)
         {
             if (FriendDetailViewModel != null && FriendDetailViewModel.HasChanges)
             {
-                var result = _messageDialogService.ShowOkCancelDialog("Changes were made, navigate away?", 
+                var result = _messageDialogService.ShowOkCancelDialog("Changes were made, navigate away?",
                     "Changes were made");
                 if (result == MessageDialogResult.Cancel)
                 {
@@ -69,5 +84,7 @@ namespace FriendOrganizer.UI.ViewModel
             FriendDetailViewModel = _friendDetailViewModelCreator();
             await FriendDetailViewModel.LoadAsync(friendId);
         }
+        #endregion
+
     }
 }

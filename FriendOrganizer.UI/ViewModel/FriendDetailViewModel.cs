@@ -1,6 +1,7 @@
 ﻿using FriendOrganizer.Model;
 using FriendOrganizer.UI.Data;
 using FriendOrganizer.UI.Event;
+using FriendOrganizer.UI.View.Services;
 using FriendOrganizer.UI.Wrapper;
 using Prism.Commands;
 using Prism.Events;
@@ -17,6 +18,7 @@ namespace FriendOrganizer.UI.ViewModel
     {
         private IFriendRepository _dataService;
         private IEventAggregator _eventAggregator;
+        private IMessageDialogService _messageDialogService;
         private FriendWrapper _friend;
 
         public FriendWrapper Friend
@@ -44,19 +46,54 @@ namespace FriendOrganizer.UI.ViewModel
         public ICommand SaveCommand { get; }
         public ICommand DeleteCommand { get; set; }
 
-        public FriendDetailViewModel(IFriendRepository dataService, IEventAggregator eventAggregator)
+        #region Constructor
+        public FriendDetailViewModel(
+            IFriendRepository dataService, 
+            IEventAggregator eventAggregator,
+            IMessageDialogService messageDialogService)
         {
             _dataService = dataService;
             _eventAggregator = eventAggregator;
+            _messageDialogService = messageDialogService;
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute); //No need for CanExecute since always true
         }
+        #endregion
 
+        #region Public Methods
+
+        public async Task LoadAsync(int? friendId)
+        {
+            var friend = friendId.HasValue ? await _dataService.GetByIdAsync(friendId.Value) : CreateFriend();
+
+            //var friend2 = await _dataService.GetByIdAsync((int)friendId);
+            Friend = new FriendWrapper(friend);
+
+            Friend.PropertyChanged += Friend_PropertyChanged;
+            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+
+            if (Friend.Id == 0)
+            {
+                //New friend being created, trigger validation
+                Friend.FirstName = "";
+            }
+        }
+        #endregion
+
+        #region Private Methods
         private async void OnDeleteExecute()
         {
-            _dataService.Delete(Friend.Model);
-            await _dataService.SaveAsync();
+            var result = _messageDialogService.ShowOkCancelDialog(
+                $"Are you sure you want to delete {Friend.FirstName} {Friend.LastName}?", "Delete?");
+
+            if (result == MessageDialogResult.OK)
+            {
+                _dataService.Delete(Friend.Model);
+                await _dataService.SaveAsync();
+                _eventAggregator.GetEvent<AfterFriendDeletedEvent>()
+                    .Publish(Friend.Id);
+            }
         }
 
         private async void OnSaveExecute()
@@ -81,23 +118,6 @@ namespace FriendOrganizer.UI.ViewModel
                 HasChanges;
         }
 
-        public async Task LoadAsync(int? friendId)
-        {
-            var friend = friendId.HasValue ? await _dataService.GetByIdAsync(friendId.Value) : CreateFriend();
-
-            //var friend2 = await _dataService.GetByIdAsync((int)friendId);
-            Friend = new FriendWrapper(friend);
-
-            Friend.PropertyChanged += Friend_PropertyChanged;
-            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-
-            if (Friend.Id == 0)
-            {
-                //New friend being created, trigger validation
-                Friend.FirstName = "";
-            }
-        }
-
         private Friend CreateFriend()
         {
             var friend = new Friend();
@@ -118,5 +138,7 @@ namespace FriendOrganizer.UI.ViewModel
                 ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
             }
         }
+        #endregion
+
     }
 }
