@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.ComponentModel;
 
 namespace FriendOrganizer.UI.ViewModel
 {
@@ -21,16 +22,25 @@ namespace FriendOrganizer.UI.ViewModel
         private IEventAggregator _eventAggregator;
         private IMessageDialogService _messageDialogService;
         private ILanguageLookupDataService _languageLookupDataService;
+        private PhoneNumberWrapper _selectedPhoneNumber;
         private FriendWrapper _friend;
+        private bool _hasChanges;
+
+
+        public PhoneNumberWrapper SelectedPhoneNumber
+        {
+            get { return _selectedPhoneNumber; }
+            set { _selectedPhoneNumber = value;
+                OnPropertyChanged();
+                ((DelegateCommand)RemovePhoneNumberCommand).RaiseCanExecuteChanged();
+            }
+        }
 
         public FriendWrapper Friend
         {
             get { return _friend; }
             set { _friend = value; OnPropertyChanged(); }
         }
-
-        private bool _hasChanges;
-
         public bool HasChanges
         {
             get { return _hasChanges; }
@@ -47,7 +57,10 @@ namespace FriendOrganizer.UI.ViewModel
 
         public ICommand SaveCommand { get; }
         public ICommand DeleteCommand { get; set; }
+        public ICommand AddPhoneNumberCommand { get; set; }
+        public ICommand RemovePhoneNumberCommand { get; set; }
         public ObservableCollection<LookupItem> Languages { get; }
+        public ObservableCollection<PhoneNumberWrapper> PhoneNumbers { get; set; }
 
         #region Constructor
         public FriendDetailViewModel(
@@ -63,8 +76,11 @@ namespace FriendOrganizer.UI.ViewModel
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute); //No need for CanExecute since always true
+            AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
+            RemovePhoneNumberCommand = new DelegateCommand(OnRemovePhoneNumberExecute, OnRemovePhoneNumberCanExecute);
 
             Languages = new ObservableCollection<LookupItem>();
+            PhoneNumbers = new ObservableCollection<PhoneNumberWrapper>();
         }
         #endregion
 
@@ -76,8 +92,14 @@ namespace FriendOrganizer.UI.ViewModel
 
             InitializeFriend(friend);
 
+            InitializePhoneNumbers(friend.PhoneNumbers);
+
             await LoadLanguagesAsync();
         }
+
+        #endregion
+
+        #region Private Methods
 
         private void InitializeFriend(Friend friend)
         {
@@ -93,10 +115,36 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
 
+        private void InitializePhoneNumbers(ICollection<PhoneNumber> phoneNumbers)
+        {
+            foreach (var wrapper in PhoneNumbers)
+            {
+                wrapper.PropertyChanged -= PhoneNumberWrapper_PropertyChanged;
+            }
 
-        #endregion
+            PhoneNumbers.Clear();
 
-        #region Private Methods
+            foreach (var phoneNumber in phoneNumbers)
+            {
+                var wrapper = new PhoneNumberWrapper(phoneNumber);
+                PhoneNumbers.Add(wrapper);
+                wrapper.PropertyChanged += PhoneNumberWrapper_PropertyChanged;
+            }
+        }
+
+        private void PhoneNumberWrapper_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!HasChanges)
+            {
+                HasChanges = _dataService.HasChanges();
+            }
+
+            if (e.PropertyName == nameof(PhoneNumberWrapper.HasErrors))
+            {
+                ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+            }
+        }
+
         private async void OnDeleteExecute()
         {
             var result = _messageDialogService.ShowOkCancelDialog(
@@ -129,6 +177,7 @@ namespace FriendOrganizer.UI.ViewModel
         {
             //Disallow saving if there are no changes to be saved, there are errors, or friend is null
             return Friend != null &&
+                PhoneNumbers.All(x => !x.HasErrors) &&
                 !Friend.HasErrors &&
                 HasChanges;
         }
@@ -163,6 +212,21 @@ namespace FriendOrganizer.UI.ViewModel
             {
                 ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
             }
+        }
+
+        private bool OnRemovePhoneNumberCanExecute()
+        {
+            return SelectedPhoneNumber != null;
+        }
+
+        private void OnRemovePhoneNumberExecute()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnAddPhoneNumberExecute()
+        {
+            throw new NotImplementedException();
         }
         #endregion
 
