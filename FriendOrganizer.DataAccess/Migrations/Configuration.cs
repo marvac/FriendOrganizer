@@ -33,6 +33,13 @@ namespace FriendOrganizer.DataAccess.Migrations
                 new Language { Name = "Italian" },
                 new Language { Name = "Spanish" },
                 new Language { Name = "Farsi" } );
+
+            //Save changes before trying to add a phone number to a person
+            context.SaveChanges();
+
+            context.PhoneNumbers.AddOrUpdate(p => p.Phone,
+                new PhoneNumber {Phone = "999-999-9999", FriendId = context.Friends.First().Id }
+                );
         }
     }
 }

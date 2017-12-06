@@ -36,6 +36,12 @@ namespace FriendOrganizer.UI.Wrapper
             set { SetValue(value); }
         }
 
+        public string Phone
+        {
+            get { return GetValue<string>(); }
+            set { SetValue(value); }
+        }
+
         public FriendWrapper(Friend friend) : base(friend)
         {
 

@@ -8,6 +8,7 @@ namespace FriendOrganizer.DataAccess
     {
         public DbSet<Friend> Friends { get; set; }
         public DbSet<Language> Languages { get; set; }
+        public DbSet<PhoneNumber> PhoneNumbers { get; set; }
 
         public FriendOrganizerDbContext() : base("FriendOrganizerDb")
         {

@@ -42,11 +42,28 @@
                   DisplayMemberPath="DisplayMember" 
                   SelectedValue="{Binding Friend.LanguageId, Mode=TwoWay}"
                   SelectedValuePath="Id" />
-        
+
+        <DockPanel Grid.Row="8" Margin="10">
+            <StackPanel DockPanel.Dock="Right" Orientation="Vertical" VerticalAlignment="Top">
+                <Button Content="Add" Margin="10" Padding="10" />
+                <Button Content="Remove" Margin="10" Padding="10" />
+            </StackPanel>
+            <DataGrid ItemsSource="{Binding PhoneNumbers}"
+                      SelectedItem="{Binding SelectedPhoneNumber, Mode=TwoWay}"
+                      AutoGenerateColumns="False"
+                      RowHeaderWidth="0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Phone Numbers" 
+                                        Width="*" 
+                                        Binding="{Binding Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </DataGrid.Columns>
+                
+            </DataGrid>
+        </DockPanel>
+
         <StackPanel Orientation="Horizontal" Grid.Row="9">
             <Button Content="Save" Command="{Binding SaveCommand}" Margin="10" />
             <Button Content="Delete" Command="{Binding DeleteCommand}" Margin="10" />
         </StackPanel>
-
     </Grid>
 </UserControl>

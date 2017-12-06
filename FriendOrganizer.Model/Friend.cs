@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -23,5 +24,12 @@ namespace FriendOrganizer.Model
         public int? LanguageId { get; set; }
 
         public Language Language { get; set; }
+
+        public ICollection<PhoneNumber> PhoneNumbers { get; set; }
+
+        public Friend()
+        {
+            PhoneNumbers = new Collection<PhoneNumber>();
+        }
     }
 }
