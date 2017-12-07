@@ -10,12 +10,12 @@ namespace FriendOrganizer.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        private IFriendDetailViewModel _friendDetailViewModel;
+        private IDetailViewModel _detailViewModel;
 
-        public IFriendDetailViewModel FriendDetailViewModel
+        public IDetailViewModel DetailViewModel
         {
-            get { return _friendDetailViewModel; }
-            private set { _friendDetailViewModel = value; OnPropertyChanged(); }
+            get { return _detailViewModel; }
+            private set { _detailViewModel = value; OnPropertyChanged(); }
         }
 
         public ICommand CreateNewFriendCommand { get; }
@@ -36,8 +36,8 @@ namespace FriendOrganizer.UI.ViewModel
             _messageDialogService = messageDialogService;
             _friendDetailViewModelCreator = friendDetailViewModelCreator;
 
-            _eventAggregator.GetEvent<OpenFriendDetailViewEvent>()
-                .Subscribe(OnOpenFriendDetailView);
+            _eventAggregator.GetEvent<OpenDetailViewEvent>()
+                .Subscribe(OnOpenDetailView);
 
             _eventAggregator.GetEvent<AfterFriendDeletedEvent>()
                 .Subscribe(AfterFriendDeleted);
@@ -58,20 +58,20 @@ namespace FriendOrganizer.UI.ViewModel
         #region Private Methods
         private void AfterFriendDeleted(int friendId)
         {
-            FriendDetailViewModel = null;
+            DetailViewModel = null;
         }
 
         private void OnCreateNewFriendExecute()
         {
             //Create new friend - don't specify an ID
-            OnOpenFriendDetailView(null);
+            OnOpenDetailView(null);
         }
 
 
 
-        private async void OnOpenFriendDetailView(int? friendId)
+        private async void OnOpenDetailView(OpenDetailViewEventArgs args)
         {
-            if (FriendDetailViewModel != null && FriendDetailViewModel.HasChanges)
+            if (DetailViewModel != null && DetailViewModel.HasChanges)
             {
                 var result = _messageDialogService.ShowOkCancelDialog("Changes were made, navigate away?",
                     "Changes were made");
@@ -81,8 +81,14 @@ namespace FriendOrganizer.UI.ViewModel
                 }
             }
 
-            FriendDetailViewModel = _friendDetailViewModelCreator();
-            await FriendDetailViewModel.LoadAsync(friendId);
+            switch (args.ViewModelName)
+            {
+                case nameof(FriendDetailViewModel):
+                    DetailViewModel = _friendDetailViewModelCreator();
+                    break;
+            }
+            DetailViewModel = _friendDetailViewModelCreator();
+            await DetailViewModel.LoadAsync(args.Id);
         }
         #endregion
 

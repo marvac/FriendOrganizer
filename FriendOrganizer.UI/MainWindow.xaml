@@ -33,7 +33,7 @@
             </MenuItem>
         </Menu>
         <view:NavigationView Grid.Row="2" Grid.Column="0" DataContext="{Binding NavigationViewModel}" />
-        <ContentControl Grid.Row="2" Grid.Column="1" Content="{Binding FriendDetailViewModel}" />
+        <ContentControl Grid.Row="2" Grid.Column="1" Content="{Binding DetailViewModel}" />
         
     </Grid>
 </Window>
