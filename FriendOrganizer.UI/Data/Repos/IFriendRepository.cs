@@ -11,5 +11,6 @@ namespace FriendOrganizer.UI.Data
         bool HasChanges();
         void Add(Friend friend);
         void Delete(Friend friend);
+        void RemovePhoneNumber(PhoneNumber phoneNumber);
     }
 }

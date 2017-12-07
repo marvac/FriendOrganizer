@@ -221,12 +221,24 @@ namespace FriendOrganizer.UI.ViewModel
 
         private void OnRemovePhoneNumberExecute()
         {
-            throw new NotImplementedException();
+            SelectedPhoneNumber.PropertyChanged -= PhoneNumberWrapper_PropertyChanged;
+
+            //Friend.Model.PhoneNumbers.Remove(SelectedPhoneNumber.Model); //Causes null ref in database
+            _dataService.RemovePhoneNumber(SelectedPhoneNumber.Model);
+
+            PhoneNumbers.Remove(SelectedPhoneNumber);
+            SelectedPhoneNumber = null;
+            HasChanges = _dataService.HasChanges();
+            ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
         }
 
         private void OnAddPhoneNumberExecute()
         {
-            throw new NotImplementedException();
+            var newNumber = new PhoneNumberWrapper(new PhoneNumber());
+            newNumber.PropertyChanged += PhoneNumberWrapper_PropertyChanged;
+            PhoneNumbers.Add(newNumber);
+            Friend.Model.PhoneNumbers.Add(newNumber.Model);
+            newNumber.Phone = ""; //Validation triggered here
         }
         #endregion
 

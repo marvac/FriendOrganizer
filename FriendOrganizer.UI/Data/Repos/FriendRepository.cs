@@ -39,6 +39,11 @@ namespace FriendOrganizer.UI.Data
             return _context.ChangeTracker.HasChanges();
         }
 
+        public void RemovePhoneNumber(PhoneNumber phoneNumber)
+        {
+            _context.PhoneNumbers.Remove(phoneNumber);
+        }
+
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
