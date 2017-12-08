@@ -154,8 +154,12 @@ namespace FriendOrganizer.UI.ViewModel
             {
                 _dataService.Delete(Friend.Model);
                 await _dataService.SaveAsync();
-                _eventAggregator.GetEvent<AfterFriendDeletedEvent>()
-                    .Publish(Friend.Id);
+                _eventAggregator.GetEvent<AfterDetailDeletedEvent>()
+                    .Publish(new AfterDetailDeletedEventArgs
+                    {
+                        Id = this.Friend.Id,
+                        ViewModelName = nameof(FriendDetailViewModel)
+                    });
             }
         }
 
@@ -165,8 +169,8 @@ namespace FriendOrganizer.UI.ViewModel
             //Data saved - no more changes to save
             HasChanges = _dataService.HasChanges();
 
-            _eventAggregator.GetEvent<AfterFriendSavedEvent>().Publish(
-                new AfterFriendSavedEventArgs
+            _eventAggregator.GetEvent<AfterDetailSavedEvent>().Publish(
+                new AfterDetailSavedEventArgs
                 {
                     Id = Friend.Id,
                     DisplayMember = $"{Friend.FirstName} {Friend.LastName}"
