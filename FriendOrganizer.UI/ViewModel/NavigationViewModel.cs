@@ -44,19 +44,24 @@ namespace FriendOrganizer.UI.ViewModel
 
         private void AfterDetailSaved(AfterDetailSavedEventArgs args)
         {
-            var lookup = Friends.SingleOrDefault(f => f.Id == args.Id);
+            switch (args.ViewModelName)
+            {
+                case nameof(FriendDetailViewModel):
+                    var lookup = Friends.SingleOrDefault(f => f.Id == args.Id);
 
-            if (lookup == null)
-            {
-                Friends.Add(new NavigationItemViewModel(
-                    args.Id, 
-                    args.DisplayMember, 
-                    nameof(FriendDetailViewModel),
-                    _eventAggregator));
-            }
-            else
-            {
-                lookup.DisplayMember = args.DisplayMember;
+                    if (lookup == null)
+                    {
+                        Friends.Add(new NavigationItemViewModel(
+                            args.Id,
+                            args.DisplayMember,
+                            nameof(FriendDetailViewModel),
+                            _eventAggregator));
+                    }
+                    else
+                    {
+                        lookup.DisplayMember = args.DisplayMember;
+                    }
+                    break;
             }
         }
 

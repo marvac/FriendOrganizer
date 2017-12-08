@@ -16,10 +16,9 @@ using System.ComponentModel;
 
 namespace FriendOrganizer.UI.ViewModel
 {
-    public class FriendDetailViewModel : ViewModelBase, IFriendDetailViewModel
+    public class FriendDetailViewModel : DetailViewModelBase, IFriendDetailViewModel
     {
         private IFriendRepository _dataService;
-        private IEventAggregator _eventAggregator;
         private IMessageDialogService _messageDialogService;
         private ILanguageLookupDataService _languageLookupDataService;
         private PhoneNumberWrapper _selectedPhoneNumber;
@@ -41,22 +40,7 @@ namespace FriendOrganizer.UI.ViewModel
             get { return _friend; }
             set { _friend = value; OnPropertyChanged(); }
         }
-        public bool HasChanges
-        {
-            get { return _hasChanges; }
-            set
-            {
-                if (_hasChanges != value)
-                {
-                    _hasChanges = value;
-                    OnPropertyChanged();
-                    ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-                }
-            }
-        }
 
-        public ICommand SaveCommand { get; }
-        public ICommand DeleteCommand { get; set; }
         public ICommand AddPhoneNumberCommand { get; set; }
         public ICommand RemovePhoneNumberCommand { get; set; }
         public ObservableCollection<LookupItem> Languages { get; }
@@ -67,15 +51,15 @@ namespace FriendOrganizer.UI.ViewModel
             IFriendRepository dataService, 
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService,
-            ILanguageLookupDataService languageLookupDataService)
+            ILanguageLookupDataService languageLookupDataService) : base(eventAggregator)
         {
             _dataService = dataService;
-            _eventAggregator = eventAggregator;
             _messageDialogService = messageDialogService;
             _languageLookupDataService = languageLookupDataService;
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute); //No need for CanExecute since always true
+
             AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
             RemovePhoneNumberCommand = new DelegateCommand(OnRemovePhoneNumberExecute, OnRemovePhoneNumberCanExecute);
 
@@ -86,7 +70,7 @@ namespace FriendOrganizer.UI.ViewModel
 
         #region Public Methods
 
-        public async Task LoadAsync(int? friendId)
+        public override async Task LoadAsync(int? friendId)
         {
             var friend = friendId.HasValue ? await _dataService.GetByIdAsync(friendId.Value) : CreateFriend();
 
@@ -145,7 +129,7 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
 
-        private async void OnDeleteExecute()
+        protected override async void OnDeleteExecute()
         {
             var result = _messageDialogService.ShowOkCancelDialog(
                 $"Are you sure you want to delete {Friend.FirstName} {Friend.LastName}?", "Delete?");
@@ -154,30 +138,20 @@ namespace FriendOrganizer.UI.ViewModel
             {
                 _dataService.Delete(Friend.Model);
                 await _dataService.SaveAsync();
-                _eventAggregator.GetEvent<AfterDetailDeletedEvent>()
-                    .Publish(new AfterDetailDeletedEventArgs
-                    {
-                        Id = this.Friend.Id,
-                        ViewModelName = nameof(FriendDetailViewModel)
-                    });
+
+                RaiseDetailDeletedEvent(Friend.Id);
             }
         }
 
-        private async void OnSaveExecute()
+        protected override async void OnSaveExecute()
         {
             await _dataService.SaveAsync();
             //Data saved - no more changes to save
             HasChanges = _dataService.HasChanges();
-
-            _eventAggregator.GetEvent<AfterDetailSavedEvent>().Publish(
-                new AfterDetailSavedEventArgs
-                {
-                    Id = Friend.Id,
-                    DisplayMember = $"{Friend.FirstName} {Friend.LastName}"
-                });
+            RaiseDetailSavedEvent(Friend.Id, $"{Friend.FirstName} {Friend.LastName}");
         }
 
-        private bool OnSaveCanExecute()
+        protected override bool OnSaveCanExecute()
         {
             //Disallow saving if there are no changes to be saved, there are errors, or friend is null
             return Friend != null &&
